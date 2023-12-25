@@ -1,0 +1,68 @@
+def windowed_dataset(series, window_size, batch_size, shuffle_buffer):
+    series = series[:, np.newaxis]                                
+    ds = tf.data.Dataset.from_tensor_slices(series)               
+    ds = ds.window(window_size + 1, shift=1, drop_remainder=True) 
+    ds = ds.flat_map(lambda w: w.batch(window_size + 1))          
+    ds = ds.shuffle(shuffle_buffer)                               
+    ds = ds.map(lambda w: (w[:-1], w[-1]))                        
+    return ds.batch(batch_size).prefetch(1)
+
+dum_series = sunspots[:10].values  
+dum_series, dum_series.shape       
+
+dum_series=dum_series[:, np.newaxis]   
+dum_series, dum_series.shape           
+
+ds = tf.data.Dataset.from_tensor_slices(dum_series)  
+
+for i in ds:
+    for val in i:
+        print(val)
+        
+window_size = 3                                               
+ds = ds.window(window_size + 1, shift=1, drop_remainder=True) 
+
+for i in ds:
+    for val in i:
+        print(val)
+        
+ds = ds.flat_map(lambda w: w.batch(window_size + 1)) 
+ds = ds.map(lambda w: (w[:-1], w[-1]))               
+
+for i in ds:
+    for val in i:
+        print(val)
+        
+ds = ds.batch(10).prefetch(1)  
+
+for i in ds:
+    for val in i:
+        print(val)
+    print("\n")
+    
+def model_forecast(model, series, window_size):
+    ds = tf.data.Dataset.from_tensor_slices(series)
+    ds = ds.window(window_size, shift=1, drop_remainder=True)
+    ds = ds.flat_map(lambda w: w.batch(window_size))
+    ds = ds.batch(batch_size).prefetch(1)
+    forecast = model.predict(ds)  # To predict
+    return forecast
+
+series = data['Monthly Mean Total Sunspot Number'].values
+time = data['Unnamed: 0'].values
+
+split_time = int(len(series)*0.9)          
+time_train = time[:split_time]
+x_train = series[:split_time]
+time_valid = time[split_time:]
+x_valid = series[split_time:]
+print(f"There are {len(x_train)} training samples and {len(x_valid)} validation samples.")
+
+
+delta = 1                      
+window_size = 60               
+batch_size = 145               
+shuffle_buffer_size= 900       
+epochs = 100                   
+train_epochs = epochs + 100    
+momentum_sgd = 0.9 
