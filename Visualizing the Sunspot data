@@ -1,0 +1,35 @@
+plt.figure(figsize=(28,6))
+plt.plot(sunspots)            
+plt.plot(sunspots[:72])       
+plt.plot(sunspots[72:72+132]) 
+plt.plot(sunspots[-13:])      
+plt.ylabel(data.columns[-1], fontsize = 12, color = 'm')
+plt.xlabel("Months from Jan 1749 to Jan 2021", fontsize = 12, color = 'm')
+plt.title("Understanding the Sunspots data", fontsize = 18, color = 'r', weight = 'bold')
+plt.legend(["Full data", "Before 1755 - The first cycle", "The first cycle", "After 2019 - The currect cycle"], fontsize = 12)
+plt.show()
+
+years = []
+start = 1755
+for i in range(0, len(data.iloc[:,-1][72:]),132):
+    years.append(start)
+    start+=11
+
+plt.figure(figsize = (28, 6))
+plt.plot(sunspots[72:])
+plt.title("Visualize Solar Cycle 1 till Solar Cycle 24", weight = 'bold', color = 'r', fontsize = 18)
+plt.xlim(72, 3265-12)
+plt.xticks(range(72, len(sunspots),132))
+plt.gca().set_xticklabels(years)
+plt.show()
+
+
+plt.figure(figsize = (15,6))
+plt.subplot(2, 1, 1)
+sns.distplot(sunspots)
+plt.title("Variation in the data distribution", fontsize = 15, color = 'r', weight = 'bold')
+plt.subplot(2, 1, 2)
+sns.boxplot(sunspots)
+plt.title("Boxplot of data", fontsize = 15, color = 'r', weight = 'bold')
+plt.tight_layout()
+plt.show()
