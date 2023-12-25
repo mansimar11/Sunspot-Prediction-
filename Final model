@@ -1,0 +1,44 @@
+# Using the same steps to build the model but now with the optimal learning rate to train it
+tf.keras.backend.clear_session()
+tf.random.set_seed(42)
+np.random.seed(42)
+
+model = tf.keras.models.Sequential([
+  tf.keras.layers.Conv1D(filters=132, kernel_size=4,strides=1, padding="causal", activation="relu",input_shape=[None, 1]),
+  tf.keras.layers.LSTM(256, return_sequences=True),
+  tf.keras.layers.LSTM(132, return_sequences=False),
+  tf.keras.layers.Dense(80, activation="relu"),
+  tf.keras.layers.Dense(10, activation="relu"),
+  tf.keras.layers.Dense(1),
+  tf.keras.layers.Lambda(lambda x: x * 400)
+])
+
+optimizer = tf.keras.optimizers.SGD(learning_rate=opt_lr, momentum=momentum_sgd)
+model.compile(loss=tf.keras.losses.Huber(delta),
+              optimizer=optimizer,
+              metrics=["mae"])
+
+history = model.fit(train_set,epochs=train_epochs)
+
+mae=history.history['mae']
+loss=history.history['loss']
+
+fig = plt.figure(figsize=(15, 6))
+plt.plot(mae, 'r')
+plt.plot(loss, 'b')
+plt.title('MAE and Loss')
+plt.xlabel("Epochs")
+plt.legend(["MAE", "Loss"])
+
+rnn_forecast = model_forecast(model, series[:, np.newaxis], window_size)
+rnn_forecast = rnn_forecast[split_time - window_size:-1, 0]  # rnn_forecast[-328:-1, 0]
+
+plt.figure(figsize=(15, 6))
+plt.plot(time_valid, x_valid)
+plt.plot(time_valid, rnn_forecast)
+plt.title("")
+plt.legend(["Validation Data", "Predicted Data"])
+plt.show()
+
+val_mae=tf.keras.metrics.mae(x_valid, rnn_forecast).numpy()
+print(f"MAE on the validation data:- {val_mae}")
