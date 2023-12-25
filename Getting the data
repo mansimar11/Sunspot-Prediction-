@@ -1,0 +1,26 @@
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+import pandas as pd
+import numpy as np
+import tensorflow as tf
+import warnings
+warnings.filterwarnings("ignore")
+
+# Take a look into the data
+data=pd.read_csv("../input/sunspots/Sunspots.csv")
+data.head()
+# Check the last year in the data
+data.tail()
+# General information about the data
+data.info()
+# Last column ---> Sunspots data
+sunspots = data.iloc[:,-1]
+sunspots.values
+# Visualize the data
+plt.figure(figsize=(28,6))
+plt.plot(sunspots)
+plt.ylabel(data.columns[-1], fontsize = 12, color = 'm')
+plt.xlabel("Months from Jan 1749 to Jan 2021", fontsize = 12, color = 'm')
+plt.title("Visualize the Data", fontsize = 18, color = 'r', weight = 'bold')
+plt.show()
