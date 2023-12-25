@@ -1,0 +1,56 @@
+tf.keras.backend.clear_session()
+tf.random.set_seed(42)
+np.random.seed(42)
+
+train_set = windowed_dataset(x_train, window_size, batch_size, shuffle_buffer_size)
+
+model = tf.keras.models.Sequential([
+  
+  tf.keras.layers.Conv1D(filters=132, kernel_size=4,strides=1, padding="causal", activation="relu",input_shape=[None, 1]),
+  tf.keras.layers.LSTM(256, return_sequences=True), 
+  tf.keras.layers.LSTM(132, return_sequences=False),
+  tf.keras.layers.Dense(80, activation="relu"),
+  tf.keras.layers.Dense(10, activation="relu"),
+  tf.keras.layers.Dense(1),
+  tf.keras.layers.Lambda(lambda x: x * 400)        
+])
+
+
+model.summary()
+
+
+lr_schedule = tf.keras.callbacks.LearningRateScheduler(lambda epoch: 1e-8 * 10**(epoch / 20), verbose = 0) # lr --> starting lr * 10^(0/20), starting lr * 10^(1/20), so on..
+
+
+optimizer = tf.keras.optimizers.SGD(learning_rate=1e-8, momentum=momentum_sgd)
+model.compile(loss=tf.keras.losses.Huber(delta),
+              optimizer=optimizer,
+              metrics=["mae"])
+
+history = model.fit(train_set, epochs=epochs, callbacks=[lr_schedule]) # Track the history of training
+
+
+lrs = 1e-8 * (10**(np.arange(epochs)/20))
+lrs
+
+
+min_loss = min(history.history['loss'])
+idx_min_loss = history.history['loss'].index(min_loss)
+opt_lr = lrs[idx_min_loss]
+first = str(round(float(str(opt_lr).split('e')[0])))
+second = str(opt_lr).split('e')[-1]
+final = [first, second]
+x = "e".join(final)
+x = float(x)
+print(f"Optimal Learning Rate was --> {x}.")
+
+
+fig = plt.figure(figsize=(15, 6))
+plt.semilogx(lrs, history.history["loss"]) 
+plt.grid(True, ls="--")
+plt.plot(opt_lr,min_loss, color = 'r', marker = 'x', markersize = 7)
+plt.title(f"Looking for Optimum Learning Rate", color = 'm', fontsize = 15)
+plt.ylabel("Losses", fontsize = 13, color = 'g')
+plt.xlabel("Learining Rates", fontsize = 13, color = 'g')
+plt.annotate(f"lr = {x}", (opt_lr,min_loss+2), (opt_lr+0.05e-5, min_loss+15), arrowprops = dict(facecolor ='k', width = 2, headwidth = 8), fontsize = 12)
+plt.show()
